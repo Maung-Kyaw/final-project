@@ -1,11 +1,3 @@
-/*
-Jinjutha Yousirivat 6581053
-Trinnaya Damrongpatharawat 6581147
-Kyaw Zin Thant 6581178
-Rapeepat Tongchai 6380869
-Norawat Gajaseni 6480566
- */
-
 import java.util.*;
 
 class Board {
@@ -32,6 +24,10 @@ class Board {
 
     public boolean isValidPosition(Position pos) {
         return pos.id >= 0 && pos.id < size * size && grid[pos.id] == '.'; // Check if the position is valid
+    }
+
+    public boolean isBomb(Position pos) {
+        return grid[pos.id] == 'B'; // Check if the position contains a Bomb
     }
 
     public int getSize() {
@@ -101,7 +97,7 @@ class PathFinder {
                 int newCol = current.id % size + move[1];
                 int newId = newRow * size + newCol;
 
-                if (isValidMove(newRow, newCol, size) && !visited[newId]) {
+                if (isValidMove(newRow, newCol, size, newId) && !visited[newId]) {
                     visited[newId] = true;
                     queue.add(new Position(newId));
                     parentMap.put(newId, current.id);
@@ -112,8 +108,8 @@ class PathFinder {
         return false; // No path found
     }
 
-    private boolean isValidMove(int row, int col, int size) {
-        return row >= 0 && row < size && col >= 0 && col < size; // Check if the move is within bounds
+    private boolean isValidMove(int row, int col, int size, int newId) {
+        return row >= 0 && row < size && col >= 0 && col < size && !board.isBomb(new Position(newId));
     }
 
     private void reconstructPath(Map<Integer, Integer> parentMap, int endId) {
@@ -164,14 +160,7 @@ public class main {
 
             // Place Bombs
             System.out.println("\nPlacing Bombs (B) on the board:");
-            System.out.print("How many Bombs would you like to place? ");
-            int bombCount = scanner.nextInt();
-            for (int i = 0; i < bombCount; i++) {
-                System.out.println("Placing Bomb " + (i + 1) + ":");
-                Position bomb = getValidPosition(scanner, N, board, "Bomb");
-                board.placeBomb(bomb);
-                board.print(); // Show board after placing each Bomb
-            }
+            placeBombs(scanner, N, board);
 
             // Show the final board setup
             System.out.println("\nFinal Board Setup:");
@@ -221,5 +210,30 @@ public class main {
                 scanner.next(); // Clear invalid input
             }
         }
+    }
+
+    private static void placeBombs(Scanner scanner, int N, Board board) {
+        System.out.println("Enter the Bomb positions (comma-separated, e.g., 0,11,23):");
+        scanner.nextLine(); // Consume newline
+        String input = scanner.nextLine();
+        String[] ids = input.split(",");
+
+        for (String idStr : ids) {
+            try {
+                int id = Integer.parseInt(idStr.trim());
+                Position bomb = new Position(id);
+
+                if (board.isValidPosition(bomb)) {
+                    board.placeBomb(bomb);
+                    System.out.println("Placed Bomb at position " + id);
+                } else {
+                    System.out.println("Invalid Bomb position: " + id + ". Skipping.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input: " + idStr + ". Skipping.");
+            }
+        }
+
+        board.print(); // Show the updated board after placing all Bombs
     }
 }
