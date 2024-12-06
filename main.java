@@ -36,14 +36,27 @@ class Board {
 
     public void print() {
         for (int i = 0; i < size * size; i++) {
-            System.out.print(grid[i] + " "); // Print each cell
-            if ((i + 1) % size == 0) System.out.println(); // Move to the next row
+            char symbol = (grid[i] == '.') ? ' ' : grid[i]; 
+            System.out.printf("%2d %c  ", i, symbol); 
+            if ((i + 1) % size == 0) {
+                System.out.println();
+            }
         }
     }
 
     public void clearKnight() {
         for (int i = 0; i < grid.length; i++) {
             if (grid[i] == 'K') grid[i] = '.'; // Clear the Knight's position
+        }
+    }
+
+    public void printWithIDs() {
+        System.out.println("Board with IDs\n");
+        for (int i = 0; i < size * size; i++) {
+            System.out.printf("%6d", i); // Print ID with 4-character width for alignment
+            if ((i + 1) % size == 0) {
+                System.out.println(); 
+            }
         }
     }
 }
@@ -126,7 +139,7 @@ class PathFinder {
 
     public void showSteps() {
         for (int step = 0; step < path.size(); step++) {
-            System.out.println("\nStep " + (step + 1) + ":");
+            System.out.println("\nMove " + (step + 1) + ":");
             Position current = path.get(step);
             board.clearKnight(); // Clear previous Knight position
             board.placeKnight(current); // Place the Knight at the new position
@@ -143,20 +156,25 @@ public class main {
         while (true) {
             System.out.print("Enter board size (N, at least 5): ");
             int N = getValidInteger(scanner, 5, Integer.MAX_VALUE);
-
+            System.out.println();
             Board board = new Board(N);
 
+            board.printWithIDs();
+            System.out.println();
+
             // Place the Knight
-            System.out.println("Placing the Knight (K) on the board:");
+            System.out.println("Placing the Knight (K) on the board");
             Position knight = getValidPosition(scanner, N, board, "Knight");
             board.placeKnight(knight);
             board.print(); // Show board after placing Knight
+            System.out.println();
 
             // Place the Castle
-            System.out.println("\nPlacing the Castle (C) on the board:");
+            System.out.println("\nPlacing the Castle (C) on the board");
             Position castle = getValidPosition(scanner, N, board, "Castle");
             board.placeCastle(castle);
             board.print(); // Show board after placing Castle
+            System.out.println();
 
             // Place Bombs
             System.out.println("\nPlacing Bombs (B) on the board:");
@@ -164,19 +182,23 @@ public class main {
 
             // Show the final board setup
             System.out.println("\nFinal Board Setup:");
+            System.out.println();
             board.print();
+            System.out.println();
 
             // Find and display the shortest path
             PathFinder pathFinder = new PathFinder(board);
             if (pathFinder.findShortestPath(knight, castle)) {
                 System.out.println("Solution found in " + (pathFinder.getPath().size() - 1) + " moves.");
                 pathFinder.showSteps();
+                System.out.println();
+                System.out.println("Knight has reached the Castle!");
             } else {
                 System.out.println("No solution exists for this configuration.");
             }
-
+            System.out.println();
             // Option to try another configuration
-            System.out.println("Try another configuration? (yes/no): ");
+            System.out.println("New game? (yes/no): ");
             if (!scanner.next().equalsIgnoreCase("yes")) {
                 break;
             }
@@ -198,9 +220,9 @@ public class main {
     private static Position getValidPosition(Scanner scanner, int N, Board board, String pieceName) {
         while (true) {
             try {
-                System.out.println("Enter the position for the " + pieceName + ":");
-                System.out.print("Enter position ID (0 to " + (N * N - 1) + "): ");
+                System.out.println("Enter " + pieceName + " ID");
                 int id = scanner.nextInt();
+                System.out.println();
 
                 Position pos = new Position(id);
                 if (board.isValidPosition(pos)) return pos;
@@ -233,7 +255,7 @@ public class main {
                 System.out.println("Invalid input: " + idStr + ". Skipping.");
             }
         }
-
+        System.out.println();
         board.print(); // Show the updated board after placing all Bombs
     }
 }
